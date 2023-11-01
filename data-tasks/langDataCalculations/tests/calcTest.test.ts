@@ -26,6 +26,8 @@ function calculate(input: Prisma.CalculationCreateInput) {
 	return res;
 }
 
-it("should have higher score after cleaning text", () => {
-	const res = calculate(data);
+it("should have lower score after cleaning text", () => {
+	const input = { ...data };
+	const res = calculate(input);
+	expect(res.ratio).toBeLessThan(data.ratio);
 });

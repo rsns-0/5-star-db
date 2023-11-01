@@ -8,6 +8,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsup index.ts --format cjs,esm --dts",
+    "test": "vitest run",
     "release": "pnpm run build && changeset publish",
     "lint": "tsc"
   },
@@ -15,7 +16,7 @@
     "@changesets/cli": "latest",
     "@types/node": "^20.8.10",
     "tsup": "latest",
-    "test": "vitest run",
+    
     "type-fest": "^4.6.0",
     "typescript": "latest",
     "vite": "^4.5.0",
