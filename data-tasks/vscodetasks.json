@@ -1,0 +1,25 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "tsc: watch - tsconfig.json",
+            "detail": "On opening the workspace, registers a listener that type checks the entire project upon saving a file. Errors will appear in the problems pane.",
+            "command": "tsc",
+            "args": [
+                "-w",
+                "--noEmit"
+            ],
+            "isBackground": true,
+            "problemMatcher": "$tsc-watch",
+            "group": "none",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "runOptions": {
+                "runOn": "folderOpen"
+            }
+        }
+    ]
+}

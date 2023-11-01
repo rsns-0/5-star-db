@@ -1,0 +1,510 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["views"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model unstructured_storage {
+  id         BigInt   @id @default(autoincrement())
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  name       String   @default("")
+  text       String   @default("")
+  tags       String[] @default([])
+  json       Json?
+}
+
+model webhooks {
+  id                  String                @id
+  created_at          DateTime              @default(now()) @db.Timestamptz(6)
+  name                String                @default("")
+  url                 String                @unique
+  discord_channel_id  String
+  token               String?               @unique
+  reminders           reminders[]
+  reminders_duplicate reminders_duplicate[]
+  discord_channels    discord_channels      @relation(fields: [discord_channel_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model countries {
+  id         BigInt      @id(map: "countries_pkey2") @default(autoincrement())
+  name       String?
+  iso2       String
+  iso3       String?
+  local_name String?
+  continent  continents?
+  flag       String?
+}
+
+model discord_channels {
+  id                  String                @id
+  name                String                @default("")
+  created_at          DateTime              @default(now()) @db.Timestamptz(6)
+  discord_guild_id    String
+  discord_guilds      discord_guilds        @relation(fields: [discord_guild_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  discord_messages    discord_messages[]
+  reminders           reminders[]
+  reminders_duplicate reminders_duplicate[]
+  webhooks            webhooks[]
+}
+
+model reminders {
+  created_at       DateTime         @default(now()) @db.Timestamptz(6)
+  user_id          String
+  channel_id       String
+  reminder_message String           @default("")
+  webhook_id       String
+  id               Int              @id @default(autoincrement())
+  time             DateTime         @db.Timestamptz(6)
+  discord_channels discord_channels @relation(fields: [channel_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  discord_user     discord_user     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  webhook          webhooks         @relation(fields: [webhook_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model discord_user {
+  id                    String                @id @unique
+  created_at            DateTime              @default(now()) @db.Timestamptz(6)
+  username              String?               @default("")
+  timezone_id           BigInt?
+  discord_guilds        discord_guilds[]
+  discord_messages      discord_messages[]
+  timezones             timezones?            @relation(fields: [timezone_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  reminders             reminders[]
+  reminders_duplicate   reminders_duplicate[]
+  discord_guilds_joined discord_guilds[]      @relation("discord_guilds_members")
+}
+
+model discord_guilds {
+  id                         String                       @id
+  created_at                 DateTime                     @default(now()) @db.Timestamptz(6)
+  name                       String                       @default("")
+  owner_id                   String?
+  iconURL                    String?
+  discord_channels           discord_channels[]
+  discord_channels_duplicate discord_channels_duplicate[]
+  discord_user               discord_user?                @relation(fields: [owner_id], references: [id])
+  discord_messages           discord_messages[]
+  members                    discord_user[]               @relation("discord_guilds_members")
+}
+
+model discord_messages {
+  id                 String            @id
+  created_at         DateTime          @default(now()) @db.Timestamptz(6)
+  text               String            @default("")
+  discord_channel_id String?
+  discord_guild_id   String?
+  owner_id           String?
+  discord_channels   discord_channels? @relation(fields: [discord_channel_id], references: [id], onUpdate: NoAction)
+  discord_guilds     discord_guilds?   @relation(fields: [discord_guild_id], references: [id], onUpdate: NoAction)
+  discord_user       discord_user?     @relation(fields: [owner_id], references: [id], onUpdate: NoAction)
+}
+
+model test_countries {
+  id         BigInt  @id(map: "countries_pkey") @default(autoincrement())
+  name       String?
+  iso2       String
+  iso3       String?
+  local_name String?
+}
+
+model test_table {
+  id         BigInt   @id @default(autoincrement())
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  name       String?  @default("") @db.VarChar
+  value      BigInt?  @default(0)
+  text       String?  @default("")
+}
+
+model timezones {
+  id                     BigInt                   @id @unique @default(autoincrement())
+  created_at             DateTime                 @default(now()) @db.Timestamptz(6)
+  label                  String
+  description            String
+  emoji                  String
+  value                  String
+  discord_user           discord_user[]
+  discord_user_duplicate discord_user_duplicate[]
+}
+
+model logs {
+  id          BigInt   @id @default(autoincrement())
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  level       Int      @default(6) @db.SmallInt
+  message     String   @default("")
+  json        Json?
+  tags        String[] @default([])
+  unsafe_json Json?
+}
+
+model countries_old {
+  id          BigInt   @id(map: "countries_pkey1") @default(autoincrement())
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  name        String   @unique(map: "countries_name_key")
+  flag_emoji  String?  @unique(map: "countries_flag_emoji_key")
+  language_id BigInt?
+}
+
+model rest_countries_api_new_data {
+  id                               Int                                 @id @default(autoincrement())
+  cca2                             String
+  ccn3                             String?
+  cca3                             String
+  cioc                             String?
+  independent                      Boolean?
+  unMember                         Boolean
+  capital                          String[]
+  altSpellings                     String[]
+  subregion                        String?
+  translations                     Json
+  latlng                           Float[]
+  landlocked                       Boolean
+  borders                          String[]
+  area                             Float
+  flag                             String
+  population                       Int
+  gini                             Json?
+  fifa                             String?
+  timezones                        String[]
+  capitalInfo                      Json
+  car                              Json
+  coatOfArms                       Json
+  flags                            Json
+  idd                              Json
+  maps                             Json
+  name                             String
+  postalCode                       Json?
+  status                           String
+  region                           String
+  continents                       String[]
+  startOfWeek                      Json
+  currencies                       Json?
+  demonyms                         Json?
+  rest_countries_api_data_names_id Int                                 @unique
+  rest_countries_api_data_names    rest_countries_api_data_names       @relation(fields: [rest_countries_api_data_names_id], references: [id])
+  languages                        rest_countries_api_data_languages[] @relation("rest_countries_api_data_languagesTorest_countries_api_new_data")
+}
+
+model rest_countries_api_data_names {
+  id                          Int                          @id @default(autoincrement())
+  common                      String                       @unique
+  official                    String                       @unique
+  nativeName                  Json
+  ProcessedLangData           ProcessedLangData?
+  rest_countries_api_new_data rest_countries_api_new_data?
+}
+
+model test_pagination {
+  id         BigInt   @id @default(autoincrement())
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  name       String?  @default("")
+  value      BigInt?  @default(0)
+  text       String?  @default("")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  providerAccountId String
+  access_token      String?
+  expires_at        Int?
+  id_token          String?
+  provider          String
+  refresh_token     String?
+  scope             String?
+  session_state     String?
+  token_type        String?
+  type              String
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  expires      DateTime
+  sessionToken String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          roles     @default(user)
+  accounts      Account[]
+  sessions      Session[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model discord_channels_duplicate {
+  id               String         @id
+  name             String         @default("")
+  created_at       DateTime       @default(now()) @db.Timestamptz(6)
+  discord_guild_id String
+  discord_guilds   discord_guilds @relation(fields: [discord_guild_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model discord_user_duplicate {
+  id          String     @id @unique(map: "discord_user_duplicate_id_idx")
+  created_at  DateTime   @default(now()) @db.Timestamptz(6)
+  username    String?    @default("")
+  timezone_id BigInt?
+  timezones   timezones? @relation(fields: [timezone_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model reminders_duplicate {
+  created_at       DateTime         @default(now()) @db.Timestamptz(6)
+  user_id          String
+  channel_id       String
+  reminder_message String           @default("")
+  webhook_id       String
+  id               Int              @id @default(autoincrement())
+  time             DateTime         @db.Timestamptz(6)
+  discord_channels discord_channels @relation(fields: [channel_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  discord_user     discord_user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  webhooks         webhooks         @relation(fields: [webhook_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model rest_countries_api_data_languages {
+  id                          Int                           @id @default(autoincrement())
+  name                        String                        @unique
+  abbreviation                String                        @unique
+  rest_countries_api_new_data rest_countries_api_new_data[] @relation("rest_countries_api_data_languagesTorest_countries_api_new_data")
+}
+
+model deep_l_supported_languages {
+  id           Int    @id @default(autoincrement())
+  name         String
+  abbreviation String @unique
+}
+
+model discord_flag_emojis {
+  id          BigInt     @id @default(autoincrement())
+  created_at  DateTime   @default(now()) @db.Timestamptz(6)
+  value       String     @unique
+  languagesId BigInt?
+  language    languages? @relation(fields: [languagesId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+}
+
+model languages {
+  id                     BigInt                @id @default(autoincrement())
+  created_at             DateTime              @default(now()) @db.Timestamptz(6)
+  name                   String                @unique
+  iso_639_1              String                @unique
+  iso_639_2              String                @unique
+  is_supported_by_deep_l Boolean?              @default(false)
+  discord_flag_emojis    discord_flag_emojis[]
+
+  @@map("languages")
+}
+
+model Command {
+  name            String            @unique
+  description     String
+  id              Int               @id @default(autoincrement())
+  CommandArgument CommandArgument[]
+
+  @@map("commands")
+}
+
+model CommandArgument {
+  name        String
+  description String  @default("")
+  id          Int     @id @default(autoincrement())
+  commandId   Int     @map("command_id")
+  command     Command @relation(fields: [commandId], references: [id])
+
+  @@map("command_arguments")
+}
+
+model ProcessedLangData {
+  id                                                          Int                           @id
+  rest_countries_common                                       String                        @unique(map: "processed_lang_data_common_key")
+  rest_countries_official                                     String                        @unique(map: "processed_lang_data_official_key")
+  rest_countries_nativename                                   Json
+  rest_countries_to_cia_fuzzy_official_top_country            String
+  rest_countries_to_cia_fuzzy_official_top_country_similarity Int
+  rest_countries_to_cia_fuzzy_common_top_country              String
+  rest_countries_to_cia_fuzzy_common_top_country_similarity   Int
+  rest_countries_to_cia_max_score_between_common_and_official Int
+  cia_country                                                 String
+  cia_primary_language                                        String
+  cia_to_wiki_fuzzy_top_country_or_region                     String
+  cia_to_wiki_fuzzy_top_country_or_region_similarity          Int
+  wiki_widely_spoken                                          String
+  wiki_country_or_region                                      String
+  wiki_minority_language                                      String
+  wiki_national_language                                      String
+  wiki_official_language                                      String
+  wiki_regional_language                                      String
+  wiki_primary_language_wiki                                  String
+  rest_countries_api_data_names_id                            Int                           @unique
+  rest_countries_api_data_names                               rest_countries_api_data_names @relation(fields: [rest_countries_api_data_names_id], references: [id])
+
+  @@map("processed_lang_data")
+}
+
+model WikiData {
+  id                Int    @id @default(autoincrement())
+  widely_spoken     String
+  country_or_region String @unique
+  minority_language String
+  national_language String
+  official_language String
+  regional_language String
+  primary_language  String
+
+  @@map("wiki_data")
+}
+
+model NewCiaLanguageData {
+  id               Int    @id @default(autoincrement())
+  country          String
+  primary_language String
+
+  @@map("new_cia_language_data")
+}
+
+model OldCiaLanguageData {
+  id            Int    @id @default(autoincrement())
+  heading       String
+  language_info String
+}
+
+model Calculation {
+  id                             Int    @id @default(autoincrement())
+  left_country_table             String
+  left_country_table_field_name  String
+  left_country_id                Int
+  left_country_name              String
+  right_country_table            String
+  right_country_table_field_name String
+  right_country_id               Int
+  right_country_name             String
+  ratio                          Int
+  token_set_ratio                Int
+
+  @@map("calculations")
+  @@unique([left_country_table, left_country_table_field_name, left_country_id, left_country_name, right_country_table, right_country_table_field_name, right_country_id, right_country_name])
+}
+
+
+view processed_lang_data_v1 {
+  id                                             Int    @unique
+  common                                         String
+  official                                       String
+  nativeName                                     Json
+  fuzzy_official_top_country                     String
+  fuzzy_official_top_country_similarity          Int
+  fuzzy_common_top_country                       String
+  fuzzy_common_top_country_similarity            Int
+  max_official_score_between_common_and_official Int
+  country                                        String
+  primary_language                               String
+  fuzzy_top_country_or_region                    String
+  fuzzy_top_country_or_region_similarity         Int
+  widely_spoken                                  String
+  country_or_region                              String
+  minority_language                              String
+  national_language                              String
+  official_language                              String
+  regional_language                              String
+  primary_language_wiki                          String
+  rest_countries_api_data_names_id               Int
+}
+
+view joined_processed_lang_data_v1 {
+  id                                             Int    @unique
+  common                                         String
+  official                                       String
+  nativeName                                     Json
+  fuzzy_official_top_country                     String
+  fuzzy_official_top_country_similarity          Int
+  fuzzy_common_top_country                       String
+  fuzzy_common_top_country_similarity            Int
+  max_official_score_between_common_and_official Int
+  country                                        String
+  primary_language                               String
+  fuzzy_top_country_or_region                    String
+  fuzzy_top_country_or_region_similarity         Int
+  widely_spoken                                  String
+  country_or_region                              String
+  minority_language                              String
+  national_language                              String
+  official_language                              String
+  regional_language                              String
+  primary_language_wiki                          String
+  rest_countries_api_data_names_id               Int
+  rest_countries_primary_language                String
+}
+
+/// The underlying view does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+view processed_language_data_similarity_scores_base {
+  id                      Int?
+  cia_language            String?
+  wiki_language           String?
+  rest_language           String?
+  cia_to_wiki_similarity  Float?  @db.Real
+  cia_to_rest_similarity  Float?  @db.Real
+  wiki_to_rest_similarity Float?  @db.Real
+  sum                     Float?  @db.Real
+
+  @@ignore
+}
+
+/// The underlying view does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+view processed_language_data_with_conflicts {
+  id                      Int?
+  cia_language            String?
+  wiki_language           String?
+  rest_language           String?
+  cia_to_wiki_similarity  Float?  @db.Real
+  cia_to_rest_similarity  Float?  @db.Real
+  wiki_to_rest_similarity Float?  @db.Real
+  sum                     Float?  @db.Real
+
+  @@ignore
+}
+
+/// The underlying view does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+view processed_language_data_with_no_false_positives {
+  id                      Int?
+  cia_language            String?
+  wiki_language           String?
+  rest_language           String?
+  cia_to_wiki_similarity  Float?  @db.Real
+  cia_to_rest_similarity  Float?  @db.Real
+  wiki_to_rest_similarity Float?  @db.Real
+  sum                     Float?  @db.Real
+
+  @@ignore
+}
+
+enum roles {
+  developer
+  user
+}
+
+enum continents {
+  Africa
+  Antarctica
+  Asia
+  Europe
+  Oceania
+  North_America @map("North America")
+  South_America @map("South America")
+}

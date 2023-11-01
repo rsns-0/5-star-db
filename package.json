@@ -1,5 +1,6 @@
 {
-  "name": "5-star-db",
+  "name": "@rsns-0/5-star-db",
+  "private": "false",
   "license": "MIT",
   "version": "0.0.1",
   "main": "dist/index.js",
@@ -12,7 +13,23 @@
   },
   "devDependencies": {
     "@changesets/cli": "latest",
+    "@types/node": "^20.8.10",
     "tsup": "latest",
-    "typescript": "latest"
+    "test": "vitest run",
+    "type-fest": "^4.6.0",
+    "typescript": "latest",
+    "vite": "^4.5.0",
+    "vitest": "^0.34.6"
+  },
+  "dependencies": {
+    "@prisma/client": "5.5.2",
+    "@sapphire/framework": "^4.7.2",
+    "change-case-all": "^1.0.15",
+    "discord.js": "^14.13.0",
+    "fuzzball": "^2.1.2",
+    "p-props": "^6.0.0",
+    "prisma": "^5.5.2",
+    "superjson": "^2.2.0",
+    "zod": "^3.22.4"
   }
 }
