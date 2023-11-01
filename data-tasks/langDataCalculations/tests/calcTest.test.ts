@@ -1,7 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { RatioAlgorithm } from "../ratioAlgorithm";
 
-import { describe, expect, it } from "vitest";
+import { expect, it } from "vitest";
 import { cleanupCountryNames } from "../../lib/cleanupCountryNames";
 
 const data = {
@@ -17,11 +17,12 @@ const data = {
 	ratio: 38,
 	token_set_ratio: 62,
 };
-function calculate(input: Prisma.CalculationCreateInput) {
-	input.left_country_name = cleanupCountryNames(input.left_country_name);
-	input.right_country_name = cleanupCountryNames(input.right_country_name);
+
+function calculate({ left_country_name, right_country_name }: Prisma.CalculationCreateInput) {
+	left_country_name = cleanupCountryNames(left_country_name);
+	right_country_name = cleanupCountryNames(right_country_name);
 	const alg = new RatioAlgorithm();
-	const res = alg.calculate(input.left_country_name, input.right_country_name);
+	const res = alg.calculate(left_country_name, right_country_name);
 
 	return res;
 }
@@ -30,4 +31,5 @@ it("should have lower score after cleaning text", () => {
 	const input = { ...data };
 	const res = calculate(input);
 	expect(res.ratio).toBeLessThan(data.ratio);
+	expect(res.tokenSetRatio).toBeLessThan(data.ratio);
 });
